@@ -1,0 +1,251 @@
+<html>
+<head>
+    <title>Validation Page</title>
+    <style>
+        body {
+            background-color: #d1acb0;
+            font-family: Arial, sans-serif;
+            color: #333;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.2em;
+        }
+        .container {
+            border: 2px solid #fff;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: inline-block;
+            position: relative;
+            min-height: 400px;
+        }
+        .image {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+        }
+        .button-container {
+            border: 2px solid black;
+            position: relative;
+            height: 80px;
+            margin-top: 0px;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .yes-button {
+            background-color: #f15881;
+            color: white;
+            position: absolute;
+            left: 105px;
+            top: 15px;
+            border-radius: 8px;
+            overflow: visible;
+        }
+
+        .yes-button::before {
+            content: "";
+            position: absolute;
+            inset: -6px;
+            border-radius: inherit;
+            background:
+            radial-gradient(circle at 10% 20%, #ff5fa2 10%, transparent 12%),
+            radial-gradient(circle at 80% 30%, #ff5fa2 10%, transparent 12%),
+            radial-gradient(circle at 30% 80%, #ff5fa2 10%, transparent 12%),
+            radial-gradient(circle at 70% 70%, #ff5fa2 10%, transparent 12%);
+            opacity: 0;
+            filter: blur(4px);
+            z-index: -1;
+        }
+
+        .yes-button:hover {
+            transform: scale(2);
+            box-shadow: 0 0 15px #ff5fa2, 0 0 30px #ff5fa2;
+        }
+        
+        .no-button {
+            background-color: #e4e5e3; /* Gray */
+            color: black;
+            position: absolute;
+            right: 105px;
+            top: 15px;
+            padding: 10px 16px;
+            min-width: 80px;
+            max-width: 150px;
+            white-space: normal;
+            word-wrap: break-word;
+            overflow: hidden;
+            box-sizing: border-box;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="bear.png" alt="Bear" class="image">
+        <!-- <h1>will you be my valentine?</h1> -->
+        <h1>validation for something?</h1>
+        <div class="button-container">
+            <button class="button yes-button">Yes</button>
+            <button class="button no-button" id="noButton">No</button>
+        </div>
+        <h6>'no' seems a bit shy😈</h6>
+    </div>
+
+    <script>
+        const noButton = document.getElementById('noButton');
+        const buttonContainer = document.querySelector('.button-container');
+
+        const phrases = ["No 😜", "Try again!", "Not today", "Missed me!", "Nope!", "Almost!", "Too slow!"];
+
+        noButton.addEventListener('mouseenter', function() {
+            // container and button-container rects
+            const container = document.querySelector('.container');
+            const containerRect = container.getBoundingClientRect();
+            const bcRect = buttonContainer.getBoundingClientRect();
+            const containerWidth = bcRect.width;
+            const containerHeight = bcRect.height;
+
+            const yesButton = document.querySelector('.yes-button');
+            const yesRect = yesButton.getBoundingClientRect();
+
+            // forbidden text/image elements (don't overlap these)
+            const forbiddens = [];
+            const h1 = document.querySelector('h1'); if (h1) forbiddens.push(h1.getBoundingClientRect());
+            const h6 = document.querySelector('h6'); if (h6) forbiddens.push(h6.getBoundingClientRect());
+            const img = document.querySelector('.image'); if (img) forbiddens.push(img.getBoundingClientRect());
+
+            // Use current noButton size (unscaled)
+            const noRect = noButton.getBoundingClientRect();
+            const buttonWidth = noRect.width;
+            const buttonHeight = noRect.height;
+
+            const maxLeft = Math.max(5, containerWidth - buttonWidth - 5);
+            const maxTop = Math.max(5, containerHeight - buttonHeight - 5);
+
+            let randomLeft = parseFloat(noButton.style.left) || 0;
+            let randomTop = parseFloat(noButton.style.top) || 0;
+            let attempts = 0;
+            let tooMuchOverlap = false;
+
+            do {
+                randomLeft = Math.random() * maxLeft;
+                randomTop = Math.random() * maxTop;
+
+                // predicted No button rect in viewport coords (relative to buttonContainer)
+                const predictedNo = {
+                    left: bcRect.left + randomLeft,
+                    right: bcRect.left + randomLeft + buttonWidth,
+                    top: bcRect.top + randomTop,
+                    bottom: bcRect.top + randomTop + buttonHeight
+                };
+
+                tooMuchOverlap = false;
+
+                // 1) Ensure inside overall container (not outside white box)
+                if (predictedNo.left < containerRect.left + 4 || predictedNo.right > containerRect.right - 4 || predictedNo.top < containerRect.top + 4 || predictedNo.bottom > containerRect.bottom - 4) {
+                    tooMuchOverlap = true;
+                }
+
+                // 2) Check overlap with Yes button (allow up to 25% of No button area)
+                if (!tooMuchOverlap) {
+                    const overlapLeft = Math.max(predictedNo.left, yesRect.left);
+                    const overlapRight = Math.min(predictedNo.right, yesRect.right);
+                    const overlapTop = Math.max(predictedNo.top, yesRect.top);
+                    const overlapBottom = Math.min(predictedNo.bottom, yesRect.bottom);
+
+                    const overlapWidth = Math.max(0, overlapRight - overlapLeft);
+                    const overlapHeight = Math.max(0, overlapBottom - overlapTop);
+                    const overlapArea = overlapWidth * overlapHeight;
+                    const buttonArea = buttonWidth * buttonHeight;
+                    const overlapPercent = (overlapArea / buttonArea) * 100;
+                    if (overlapPercent > 25) tooMuchOverlap = true;
+                }
+
+                // 3) Check overlap with any forbidden text/image (no overlap allowed)
+                if (!tooMuchOverlap) {
+                    for (const f of forbiddens) {
+                        const overlapLeft = Math.max(predictedNo.left, f.left);
+                        const overlapRight = Math.min(predictedNo.right, f.right);
+                        const overlapTop = Math.max(predictedNo.top, f.top);
+                        const overlapBottom = Math.min(predictedNo.bottom, f.bottom);
+                        const overlapWidth = Math.max(0, overlapRight - overlapLeft);
+                        const overlapHeight = Math.max(0, overlapBottom - overlapTop);
+                        if (overlapWidth * overlapHeight > 0) { tooMuchOverlap = true; break; }
+                    }
+                }
+
+                attempts++;
+            } while (tooMuchOverlap && attempts < 200);
+
+            // If all attempts failed, snap to a fallback position inside container (left-most below header)
+            if (tooMuchOverlap) {
+                randomLeft = 8;
+                // place below image/h1 if present
+                let fallbackTop = 10;
+                if (img) fallbackTop = (img.getBoundingClientRect().bottom - bcRect.top) + 10;
+                else if (h1) fallbackTop = (h1.getBoundingClientRect().bottom - bcRect.top) + 10;
+                randomTop = Math.min(maxTop, fallbackTop);
+            }
+
+            // pick random phrase
+            const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+            noButton.textContent = phrase;
+
+            // apply random size (between 50% and 100%)
+            const minScale = 0.5;
+            const randomScale = minScale + Math.random() * (1 - minScale);
+
+            // apply position and scale (left/top relative to buttonContainer)
+            noButton.style.left = randomLeft + 'px';
+            noButton.style.top = randomTop + 'px';
+            noButton.style.transform = `scale(${randomScale})`;
+        });
+    </script>
+</body>
+</html>
+
+<!-- 
+<script>
+        const noButton = document.getElementById('noButton');
+        const buttonContainer = document.querySelector('.button-container');
+
+        noButton.addEventListener('mouseenter', function() {
+            // Get button container dimensions
+            const containerRect = buttonContainer.getBoundingClientRect();
+            const containerWidth = containerRect.width;
+            const containerHeight = containerRect.height;
+
+            // Get button dimensions
+            const buttonWidth = noButton.offsetWidth;
+            const buttonHeight = noButton.offsetHeight;
+
+            // Calculate random position within button container bounds
+            const maxLeft = containerWidth - buttonWidth - 10;
+            const maxTop = containerHeight - buttonHeight - 10;
+
+            const randomLeft = Math.max(5, Math.random() * maxLeft);
+            const randomTop = Math.max(5, Math.random() * maxTop);
+
+            // Calculate random size (between 50% and 100% of original size)
+            const minScale = 0.5;
+            const randomScale = minScale + Math.random() * (1 - minScale);
+
+            // Apply changes
+            noButton.style.left = randomLeft + 'px';
+            noButton.style.top = randomTop + 'px';
+            noButton.style.transform = `scale(${randomScale})`;
+        });
+    </script> -->
