@@ -31,7 +31,6 @@
             margin-bottom: 20px;
         }
         .button-container {
-            border: 2px solid black;
             position: relative;
             height: 80px;
             margin-top: 0px;
@@ -90,17 +89,30 @@
             box-sizing: border-box;
             line-height: 1.2;
         }
+        .result {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .yay-gif {
+            display: block;
+            margin: 12px auto 0;
+            max-width: 320px;
+            width: 100%;
+            height: auto;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <img src="bear.png" alt="Bear" class="image">
-        <!-- <h1>will you be my valentine?</h1> -->
-        <h1>validation for something?</h1>
+        <h1>will you be my valentine?</h1>
         <div class="button-container">
             <button class="button yes-button">Yes</button>
             <button class="button no-button" id="noButton">No</button>
         </div>
+
+        <div id="result" class="result" style="display:none;"></div>
+
         <h6>'no' seems a bit shy😈</h6>
     </div>
 
@@ -212,6 +224,24 @@
             noButton.style.left = randomLeft + 'px';
             noButton.style.top = randomTop + 'px';
             noButton.style.transform = `scale(${randomScale})`;
+        });
+
+        // Yes button click: remove buttons and show celebration
+        const yesButton = document.querySelector('.yes-button');
+        const resultDiv = document.getElementById('result');
+        yesButton.addEventListener('click', function() {
+            // remove or hide the button container
+            const bc = document.querySelector('.button-container');
+            if (bc) bc.remove();
+            const h6 = document.querySelector('h6');
+            if (h6) h6.remove();
+
+            // show Yay text and GIF (place your gif as `yay.gif` in the same folder)
+            resultDiv.innerHTML = `
+                <h2>Yay!!!</h2>
+                <img src="gifIG.gif" alt="Yay" class="yay-gif">
+            `;
+            resultDiv.style.display = 'block';
         });
     </script>
 </body>
